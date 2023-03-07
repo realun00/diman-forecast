@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { usePosition } from "../hooks/usePosition";
 import useServices from "../hooks/useServices";
 
@@ -6,6 +6,9 @@ import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { formatData, formatNearestTime } from "../models/formatting";
 import { useNavigate, useParams } from "react-router-dom";
+
+import Skeleton from "@mui/material/Skeleton/Skeleton";
+import ForecastDay from "../components/forecast/ForecastDay";
 
 import {
   selectCity,
@@ -17,44 +20,54 @@ import {
 } from "../redux/slices/forecastReducer";
 import { Card, Col, Row } from "react-bootstrap";
 import useSnackbarCustom from "../hooks/useSnackbarCustom";
-import Skeleton from "@mui/material/Skeleton/Skeleton";
-import ForecastDay from "../components/forecast/ForecastDay";
+import useWindowSize from "../hooks/useWindowSize";
 
 const Forecast = () => {
+  /*Local state for selected day */
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [selectedDay, setSelectedDay] = useState([]);
   const [isLoadingSelected, setIsLoadingSelected] = useState(false);
+
+  //ref for the selected day - in order to scroll down to it on the mobile version
+  const selectedRef = useRef<null | HTMLDivElement>(null);
 
   //Selectors in which the data will be stored
   const city = useSelector(selectCity);
   const data = useSelector(selectData);
   const isLoading = useSelector(selectIsLoading);
 
+  //Getting the width of the page from a custom hook
+  const { width } = useWindowSize();
   //redux dispatch
   const dispatch = useDispatch();
-
   //check if there is parameter set for a city
   const { city: cityParam }: any = useParams();
   //useNavigate hook
   const navigate = useNavigate();
-
   //api call functions
-  const { getForecastByCity, getForecastByCoordinates } = useServices();
-
+  //const { getForecastByCity, getForecastByCoordinates } = useServices();
+  //const services = useServices();
+  const { getForecastByCoordinates, getForecastByCity } = useServices();
   //get the latitude and longitude from usePosition hook
-  const { latitude, longitude } = usePosition();
-
+  const { latitude, longitude} = usePosition(); 
   //get snackbars from useSnackbarCustom hook
   const { snackbarError } = useSnackbarCustom();
 
   const selectDay = (day: any, index: number) => {
-    setIsLoadingSelected(true);
-    setSelectedDay(day);
-    setSelectedIndex(index);
-    const timer = setTimeout(() => {
-      setIsLoadingSelected(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    //Check if the selected index in different from the one that user executes
+    if (selectedIndex !== index) {
+      //if the width is smaller that 992px, we will scrollInto the view
+      if (width < 992) {
+        selectedRef.current!.scrollIntoView({ behavior: "smooth" });
+      }
+      setIsLoadingSelected(true);
+      setSelectedDay(day);
+      setSelectedIndex(index);
+      const timer = setTimeout(() => {
+        setIsLoadingSelected(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
   };
 
   React.useEffect(() => {
@@ -86,6 +99,7 @@ const Forecast = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cityParam, latitude, longitude]);
 
+
   React.useEffect(() => {
     const fetchForecastCity = async (city: string) => {
       dispatch(setIsLoading(true));
@@ -115,7 +129,7 @@ const Forecast = () => {
     } else {
       navigate("/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cityParam]);
 
   React.useEffect(() => {
@@ -204,7 +218,8 @@ const Forecast = () => {
                     <img
                       width="80px"
                       height="80px"
-                      src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+                      //src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+                      src={`/assets/icons/${icon}.png`}
                       alt="weather img"
                     />
                     {isSameTemp ? (
@@ -221,7 +236,7 @@ const Forecast = () => {
           })}
         </Row>
       </Card>
-      <ForecastDay selectedDay={selectedDay} isLoadingSelected={isLoadingSelected}/>
+      <ForecastDay selectedDay={selectedDay} selectedRef={selectedRef} isLoadingSelected={isLoadingSelected} />
     </React.Fragment>
   );
 };

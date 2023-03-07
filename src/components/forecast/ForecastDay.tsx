@@ -7,19 +7,24 @@ import { selectIsLoading } from "../../redux/slices/forecastReducer";
 import { Card, Col, Row } from "react-bootstrap";
 import DayInterface from "../../interfaces/day";
 import Skeleton from "@mui/material/Skeleton/Skeleton";
+import useWindowSize from "../../hooks/useWindowSize";
 
 interface ForecastDayProps {
   selectedDay: DayInterface[];
   isLoadingSelected: boolean;
+  selectedRef: React.MutableRefObject<null | HTMLDivElement>;
 }
 
 const ForecastDay = (props: ForecastDayProps) => {
   //Selectors in which the data will be stored
   const isLoading = useSelector(selectIsLoading);
 
+  //Getting the width of the page from a custom hook
+  const { width } = useWindowSize();
+
   return (
     <Card className="mt-4 orange-background-gradient" body>
-      <Row className="justify-content-between">
+      <Row ref={props.selectedRef} xs={1} sm={2} lg={props?.selectedDay?.length > 6 ? 4 : props.selectedDay?.length}>
         {props?.selectedDay?.map((day: DayInterface) => {
           const icon = day.weather[0].icon;
           const time = format(new Date(day.dt_txt!), "HH:mm");
@@ -32,13 +37,13 @@ const ForecastDay = (props: ForecastDayProps) => {
           if (isLoading || props.isLoadingSelected) {
             return (
               <Col key={day.dt}>
-                <div className="d-flex flex-column align-items-center py-2">
+                <div className="d-flex flex-row flex-lg-column align-items-center justify-content-between py-2 text-center">
                   <Skeleton
                     className="mb-1 lightgrey-color"
                     sx={{ transform: "none" }}
                     animation="wave"
                     variant="text"
-                    width="100%"
+                    width={width < 992 ? "15%" : "100%"}
                     height="15px"
                   />
                   <Skeleton
@@ -51,10 +56,14 @@ const ForecastDay = (props: ForecastDayProps) => {
                   />
                   <Skeleton
                     className="my-1 lightgrey-color"
-                    sx={{ transform: "none", minHeight: "110px" }}
+                    sx={{
+                      transform: "none",
+                      minHeight: width < 992 ? "81px" : "110px",
+                      height: width < 692 && width >= 576 ? "101px" : undefined,
+                    }}
                     animation="wave"
                     variant="text"
-                    width="100%"
+                    width={width < 992 ? "50%" : "100%"}
                   />
                 </div>
               </Col>
@@ -62,15 +71,16 @@ const ForecastDay = (props: ForecastDayProps) => {
           } else {
             return (
               <Col key={day.dt}>
-                <div className="d-flex flex-column align-items-center py-2 text-center">
-                  <span className="fw-bold">{time}</span>
+                <div className="d-flex flex-row flex-lg-column align-items-center justify-content-between py-2 text-center">
+                  <h6 className="fw-bold">{time}</h6>
                   <img
                     width="80px"
                     height="80px"
-                    src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+                    //src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+                    src={`/assets/icons/${icon}.png`}
                     alt="weather img"
                   />
-                  <div className="d-flex flex-column align-items-center">
+                  <div className="d-flex flex-column">
                     <span>
                       Temperature: <strong>{temperature}&#176;</strong>
                     </span>
