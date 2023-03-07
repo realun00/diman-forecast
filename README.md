@@ -41,22 +41,27 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 ## Additional libraries:
 Routing: react-router-dom v6
+
 Styling: 
   - React Bootstrap
   - Material UI
   Notistack (for snackbar messages)
+
 State management: Redux Toolkit
+
 HTTP client: axios
 
 ## 3rd party REST APIs
 Get forecast weather: OpenWeather https://openweathermap.org/ (Free version)
+
 GEOIP: AbstractAPI https://app.abstractapi.com/ (Free version) - 10,000 calls per month
 
 ## Anything I could implement with more time
 More test cases (for example):
-- API call for Plovdiv's weather (with valid and invalid token/arguments) 
-  a) check if there are any errors
-  b) check if Plovdiv and BG is in the document
+
+API call for Plovdiv's weather (with valid and invalid token/arguments) 
+  - check if there are any errors
+  - check if Plovdiv and BG is in the document
 
 Sections for the weather forecast
  - Current day
