@@ -39,8 +39,25 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
+## Additional libraries:
+Routing: react-router-dom v6
+Styling: 
+  - React Bootstrap
+  - Material UI
+  Notistack (for snackbar messages)
+State management: Redux Toolkit
+HTTP client: axios
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 3rd party REST APIs
+Get forecast weather: OpenWeather https://openweathermap.org/ (Free version)
+GEOIP: AbstractAPI https://app.abstractapi.com/ (Free version) - 10,000 calls per month
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Anything I could implement with more time
+More test cases (for example):
+- API call for Plovdiv's weather (with valid and invalid token/arguments) 
+  a) check if there are any errors
+  b) check if Plovdiv and BG is in the document
+
+Sections for the weather forecast
+ - Current day
+ - 5 days (implemented)

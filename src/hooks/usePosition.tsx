@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setIsLoading } from "../redux/slices/forecastReducer";
 import useServices from "./useServices";
 import useSnackbarCustom from "./useSnackbarCustom";
@@ -23,6 +24,7 @@ export const usePosition = () => {
 
   const { getLocationByIP } = useServices();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { snackbarError } = useSnackbarCustom();
 
   const getLocation = async () => {
@@ -36,6 +38,7 @@ export const usePosition = () => {
         });
       }
     } catch (err: any) {
+      navigate("/forecast/sofia")
       if (!err?.response) {
         snackbarError("No server Response");
       } else {
