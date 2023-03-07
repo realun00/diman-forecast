@@ -1,7 +1,8 @@
 import React from "react";
-import { Button, Container, Form, Navbar } from "react-bootstrap";
+import { Container, Navbar } from "react-bootstrap";
 
 import { NavLink } from "react-router-dom";
+import SearchForm from "./SearchForm";
 
 const NavBar = () => {
   return (
@@ -10,11 +11,7 @@ const NavBar = () => {
         <Navbar.Brand as={NavLink} to="/">
           Diman Forecast
         </Navbar.Brand>
-
-        <Form className="d-flex">
-          <Form.Control type="search" placeholder="Search" className="me-2" aria-label="Search" />
-          <Button variant="warning">Search</Button>
-        </Form>
+        <SearchForm />
       </Container>
     </Navbar>
   );

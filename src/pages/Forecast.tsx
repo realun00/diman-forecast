@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePosition } from "../hooks/usePosition";
 import useServices from "../hooks/useServices";
 
+import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
+import { formatData, formatNearestTime } from "../models/formatting";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   selectCity,
@@ -12,58 +15,50 @@ import {
   setData,
   setIsLoading,
 } from "../redux/slices/forecastReducer";
+import { Card, Col, Row } from "react-bootstrap";
+import useSnackbarCustom from "../hooks/useSnackbarCustom";
+import Skeleton from "@mui/material/Skeleton/Skeleton";
+import ForecastDay from "../components/forecast/ForecastDay";
 
 const Forecast = () => {
+  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedDay, setSelectedDay] = useState([]);
+  const [isLoadingSelected, setIsLoadingSelected] = useState(false);
+
+  //Selectors in which the data will be stored
   const city = useSelector(selectCity);
   const data = useSelector(selectData);
   const isLoading = useSelector(selectIsLoading);
 
+  //redux dispatch
   const dispatch = useDispatch();
 
-  /* Older way using nested loops for formating the data
-  const formatData = (list: any) => {
-    let days: any = {};
-    for (let i = 0; i < list.length; i++) {
-      //temp arr for a single day
-      let day = [];
+  //check if there is parameter set for a city
+  const { city: cityParam }: any = useParams();
+  //useNavigate hook
+  const navigate = useNavigate();
 
-      //pushing the value of the first element
-      day.push(list[i]);
-
-      //nested loop
-      for (let j = i + 1; j < list.length; j++) {
-        //if the dates from the current and the next element are equal we push the value to "day" and skip the next iteration of "i"
-        if (list[i].dt_txt.substring(0, 10) === list[j].dt_txt.substring(0, 10)) {
-          day.push(list[j]);
-          i++;
-        }
-      }
-      //Creating dynamic property in days object
-      days[list[i].dt_txt.substring(0, 10)] = day;
-    }
-
-    //returning the days object
-    return days;
-  };
-  */
-
-  //More modern way using Object.fromEntries from ECMAScript 2019 .map and filter array methods
-  const formatData = (list: any) => {
-    const days = Object.fromEntries(
-      list.map((date: any) => [
-        date.dt_txt.substring(0, 10),
-        list.filter((e: any) => date.dt_txt.substring(0, 10) === e.dt_txt.substring(0, 10)),
-      ])
-    );
-
-    return days;
-  };
-
+  //api call functions
   const { getForecastByCity, getForecastByCoordinates } = useServices();
+
+  //get the latitude and longitude from usePosition hook
   const { latitude, longitude } = usePosition();
 
+  //get snackbars from useSnackbarCustom hook
+  const { snackbarError } = useSnackbarCustom();
+
+  const selectDay = (day: any, index: number) => {
+    setIsLoadingSelected(true);
+    setSelectedDay(day);
+    setSelectedIndex(index);
+    const timer = setTimeout(() => {
+      setIsLoadingSelected(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  };
+
   React.useEffect(() => {
-    const getForecast = async (latitude: number, longitude: number) => {
+    const fetchForecastCoords = async (latitude: number, longitude: number) => {
       dispatch(setIsLoading(true));
       try {
         const result = await getForecastByCoordinates({ lat: latitude, lon: longitude });
@@ -72,19 +67,163 @@ const Forecast = () => {
           dispatch(setData(formatData(result.data.list)));
         }
       } catch (err: any) {
-        console.log(err);
+        if (!err?.response) {
+          snackbarError("No server Response");
+        } else {
+          snackbarError("Unable to fetch data");
+        }
       }
-      dispatch(setIsLoading(false));
+
+      const timer = setTimeout(() => {
+        dispatch(setIsLoading(false));
+      }, 1500);
+      return () => clearTimeout(timer);
     };
 
-    if (latitude && longitude) {
-      getForecast(latitude, longitude);
+    if (!cityParam && latitude && longitude) {
+      fetchForecastCoords(latitude, longitude);
     }
-  }, [latitude, longitude]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityParam, latitude, longitude]);
 
-  console.log(city, data, isLoading);
+  React.useEffect(() => {
+    const fetchForecastCity = async (city: string) => {
+      dispatch(setIsLoading(true));
+      try {
+        const result = await getForecastByCity({ city });
+        if (result.data) {
+          dispatch(setCity(result.data.city));
+          dispatch(setData(formatData(result.data.list)));
+        }
+      } catch (err: any) {
+        navigate("/");
+        if (!err?.response) {
+          snackbarError("No server Response");
+        } else {
+          snackbarError(err?.message ?? "Unable to fetch data");
+        }
+      }
+      const timer = setTimeout(() => {
+        dispatch(setIsLoading(false));
+      }, 3000);
+      return () => clearTimeout(timer);
+    };
 
-  return <div>Forecast</div>;
+    //check if the cityParam exists, if it contains letters only
+    if (cityParam && /^[^-\s][a-zA-Z\s-]+$/.test(cityParam)) {
+      fetchForecastCity(encodeURIComponent(cityParam));
+    } else {
+      navigate("/");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityParam]);
+
+  React.useEffect(() => {
+    if (data) {
+      const firstDay: any = Object.values(data)[0];
+      setSelectedDay(firstDay);
+    }
+  }, [data]);
+
+  return (
+    <React.Fragment>
+      <Card body>
+        <Row className="mb-4">
+          {isLoading ? (
+            <Skeleton
+              sx={{ marginLeft: "12px", marginBottom: "0.5rem", bgcolor: "grey.200", transform: "none" }}
+              animation="wave"
+              width="33%"
+              height="40px"
+              variant="text"
+            />
+          ) : (
+            <h2 style={{ width: "fit-content" }}>
+              {city?.name}, {city?.country}
+            </h2>
+          )}
+        </Row>
+        <Row className="justify-content-between" xs={1} sm={2} md={3} lg={6}>
+          {Object.entries(data).map((e: any, i: number) => {
+            const nearestTimeData = formatNearestTime(e[1]);
+            const icon = nearestTimeData?.weather?.[0]?.icon;
+            const minTemp = Math.trunc(nearestTimeData?.main?.temp_min!);
+            const maxTemp = Math.trunc(nearestTimeData?.main?.temp_max!);
+            const isSameTemp = minTemp === maxTemp ? true : false;
+
+            if (isLoading) {
+              return (
+                <Col key={e[0]}>
+                  <div className="d-flex flex-column align-items-center py-2">
+                    <Skeleton
+                      sx={{ bgcolor: "grey.200", transform: "none" }}
+                      animation="wave"
+                      variant="text"
+                      width="100%"
+                      height="15px"
+                    />
+                    <Skeleton
+                      className="my-1"
+                      sx={{ bgcolor: "grey.200", transform: "none" }}
+                      animation="wave"
+                      variant="text"
+                      width="100%"
+                      height="15px"
+                    />
+                    <Skeleton
+                      className="my-1"
+                      sx={{ bgcolor: "grey.200", transform: "none" }}
+                      animation="wave"
+                      variant="circular"
+                      width={68}
+                      height={68}
+                    />
+                    <Skeleton
+                      className="mt-1"
+                      sx={{ bgcolor: "grey.200", transform: "none" }}
+                      animation="wave"
+                      width="100%"
+                      height="15px"
+                    />
+                  </div>
+                </Col>
+              );
+            } else {
+              return (
+                <Col key={e[0]}>
+                  <div
+                    className={`d-flex flex-column align-items-center py-2 col-day-select ${
+                      selectedIndex === i + 1 ? "orange-background-gradient" : ""
+                    }`}
+                    onClick={() => {
+                      selectDay(e[1], i + 1);
+                    }}
+                  >
+                    <span className="fw-bold">{format(new Date(e[0]), "EEEE")}</span>
+                    <span className="lightgrey-color">{format(new Date(e[0]), "dd.MM.yyyy")}</span>
+                    <img
+                      width="80px"
+                      height="80px"
+                      src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+                      alt="weather img"
+                    />
+                    {isSameTemp ? (
+                      <span>{minTemp}&#176;</span>
+                    ) : (
+                      <span>
+                        {minTemp}&#176; | {maxTemp}&#176;
+                      </span>
+                    )}
+                  </div>
+                </Col>
+              );
+            }
+          })}
+        </Row>
+      </Card>
+      <ForecastDay selectedDay={selectedDay} isLoadingSelected={isLoadingSelected}/>
+    </React.Fragment>
+  );
 };
 
 export default Forecast;

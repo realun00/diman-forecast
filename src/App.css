@@ -2,6 +2,7 @@
 
 :root {
   --white: #fff;
+  --light-grey: #818181;
   --grey: #444444;
   --orange: #ffc107;
   --default-font-family: "Source Sans Pro", sans-serif;
@@ -42,4 +43,42 @@ body {
   position: sticky;
   top: 0;
   transition: all 0.5s;
+}
+
+.lightgrey-color {
+  color: var(--light-grey);
+}
+
+.orange-background {
+  background-color: var(--orange);
+}
+
+.orange-background-gradient {
+  background: rgb(249, 230, 104);
+  background: linear-gradient(0deg, rgba(249, 230, 104, 1) 0%, rgba(255, 193, 7, 1) 100%);
+}
+
+.col-day-select {
+  cursor: pointer;
+  border-radius: 18px;
+  transition: 0.3s;
+}
+
+.col-day-select:hover {
+  /* background-color: var(--orange); */
+  background: rgb(249, 230, 104);
+  background: linear-gradient(0deg, rgba(249, 230, 104, 1) 0%, rgba(255, 193, 7, 1) 100%);
+}
+
+.form-control {
+  box-shadow: none !important;
+}
+
+.form-control:focus {
+  border-color: var(--orange);
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0 0.625rem -0.1875rem rgba(0, 0, 0, 0.13);
 }

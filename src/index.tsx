@@ -7,15 +7,19 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { BrowserRouter } from "react-router-dom";
 
+import { SnackbarProvider } from "notistack";
+
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   // <React.StrictMode>
   <Provider store={store}>
-    <BrowserRouter>
-      <Suspense fallback="">
-        <App />
-      </Suspense>
-    </BrowserRouter>
+    <SnackbarProvider maxSnack={3} autoHideDuration={1500} preventDuplicate>
+      <BrowserRouter>
+        <Suspense fallback="">
+          <App />
+        </Suspense>
+      </BrowserRouter>
+    </SnackbarProvider>
   </Provider>
 
   // </React.StrictMode>

@@ -14,7 +14,11 @@ function App() {
       <NavBar />
       <Container fluid="xxl" id="df-container">
         <Routes>
-          <Route path="/" element={<Forecast />} />
+          <Route path="/" element={<Forecast />}/>
+          <Route path="/forecast">
+            <Route index element={<Forecast />} />
+            <Route path=":city" element={<Forecast />} />
+          </Route>
 
           {/* NO FOUND */}
           <Route
