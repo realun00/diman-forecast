@@ -5,7 +5,7 @@ import reportWebVitals from "./reportWebVitals";
 
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 
 import { SnackbarProvider } from "notistack";
 
@@ -14,11 +14,11 @@ root.render(
   // <React.StrictMode>
   <Provider store={store}>
     <SnackbarProvider maxSnack={3} autoHideDuration={1500} preventDuplicate>
-      <BrowserRouter>
+      <HashRouter>
         <Suspense fallback="">
           <App />
         </Suspense>
-      </BrowserRouter>
+      </HashRouter>
     </SnackbarProvider>
   </Provider>
 
