@@ -43,13 +43,15 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 Routing: react-router-dom v6
 
 Styling: 
-  - React Bootstrap
-  - Material UI
-  Notistack (for snackbar messages)
+  - React Bootstrap mostly for the grid layout
+  - Material UI for the Skeleton component and Notistack
+  - Notistack (for snackbar messages)
 
 State management: Redux Toolkit
 
 HTTP client: axios
+
+Font Awesome: for the loading spinner
 
 ## 3rd party REST APIs
 Get forecast weather: OpenWeather https://openweathermap.org/ (Free version)
@@ -61,7 +63,7 @@ More test cases (for example):
 
 API call for Plovdiv's weather (with valid and invalid token/arguments) 
   - check if there are any errors
-  - check if Plovdiv and BG is in the document
+  - check if Plovdiv and BG are in the document
 
 Sections for the weather forecast
  - Current day
